@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">FestaJunina</string>
+    <string name="navigation_drawer_open">Abrir menu</string>
+    <string name="navigation_drawer_close">Fechar menu</string>
+    <string name="hint_nome">Nome</string>
+    <string name="hint_descricao">Descrição</string>
+    <string name="hint_preco">Preço</string>
+    <string name="content_description_imagem">Imagem da brincadeira</string>
+    <string name="button_salvar">Salvar</string>
+    <string name="button_listar">Listar Brincadeiras</string>
 </resources>

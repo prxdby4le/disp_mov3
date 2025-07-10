@@ -1,106 +1,101 @@
 package com.example.festajunina;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import android.view.MenuItem;
+import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 
-public class MainActivity extends AppCompatActivity {
-    EditText editNome, editDescricao, editPreco;
-    Button btnSalvar;
-    BrincadeiraDAO dao;
-    Brincadeira brincadeiraAtual = null;
+public class MainActivity extends AppCompatActivity implements FragmentNavigation {
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        setContentView(R.layout.activity_main_collapsing);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.navigation_view);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
+        collapsingToolbarLayout.setTitle(getString(R.string.app_name));
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_cadastrar) {
+                navigateToMainFragment();
+            } else if (id == R.id.nav_listar) {
+                navigateToListarBrincadeiras();
+            } else if (id == R.id.nav_editar) {
+                navigateToEditarBrincadeiras();
+            } else if (id == R.id.nav_excluir) {
+                navigateToExcluirBrincadeiras();
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
 
-        editNome = findViewById(R.id.editNome);
-        editDescricao = findViewById(R.id.editDescricao);
-        editPreco = findViewById(R.id.editPreco);
-        btnSalvar = findViewById(R.id.btnSalvar);
-
-        dao = new BrincadeiraDAO(this);
-
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("brincadeira")) {
-            brincadeiraAtual = intent.getParcelableExtra("brincadeira");
-            if (brincadeiraAtual != null && brincadeiraAtual.getId() > 0) {
-                editNome.setText(brincadeiraAtual.getNome());
-                editDescricao.setText(brincadeiraAtual.getDescricao());
-                editPreco.setText(String.valueOf(brincadeiraAtual.getPreco()));
-            } else {
-                brincadeiraAtual = null;
-            }
+        if (savedInstanceState == null) {
+            navigateToListarBrincadeiras();
         }
-
-        btnSalvar.setOnClickListener(v -> {
-            String nome = editNome.getText().toString().trim();
-            String descricao = editDescricao.getText().toString().trim();
-            String precoStr = editPreco.getText().toString().trim();
-
-            if (nome.isEmpty() || precoStr.isEmpty()) {
-                Toast.makeText(this, "Nome e Preço são obrigatórios", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            float preco;
-            try {
-                preco = Float.parseFloat(precoStr);
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Preço inválido", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
-                if (brincadeiraAtual == null) {
-                    Brincadeira nova = new Brincadeira();
-                    nova.setNome(nome);
-                    nova.setDescricao(descricao);
-                    nova.setPreco(preco);
-
-                    dao.inserir(nova);
-                    Toast.makeText(this, "Brincadeira adicionada com sucesso", Toast.LENGTH_SHORT).show();
-                } else {
-                    brincadeiraAtual.setNome(nome);
-                    brincadeiraAtual.setDescricao(descricao);
-                    brincadeiraAtual.setPreco(preco);
-
-                    dao.atualizar(brincadeiraAtual);
-                    Toast.makeText(this, "Brincadeira atualizada com sucesso", Toast.LENGTH_SHORT).show();
-                }
-
-                finish(); // só finaliza se tudo ocorreu bem
-
-            } catch (Exception e) {
-                e.printStackTrace(); // mostra o erro no Logcat
-                Toast.makeText(this, "Erro ao salvar: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-
-
-        findViewById(R.id.btnListar).setOnClickListener(v -> {
-            startActivity(new Intent(this, ListarBrincadeirasActivity.class));
-        });
     }
 
-    private void limparCampos() {
-        editNome.setText("");
-        editDescricao.setText("");
-        editPreco.setText("");
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void navigateToMainFragment() {
+        replaceFragment(new MainFragment());
+    }
+
+    @Override
+    public void navigateToListarBrincadeiras() {
+        replaceFragment(new ListarBrincadeirasFragment());
+    }
+
+    public void navigateToEditarBrincadeiras() {
+        replaceFragment(new EditarBrincadeirasFragment());
+    }
+
+    public void navigateToExcluirBrincadeiras() {
+        replaceFragment(new ExcluirBrincadeirasFragment());
+    }
+
+    @Override
+    public void navigateToEditarBrincadeira(Brincadeira brincadeira) {
+        MainFragment fragment = new MainFragment();
+        Bundle args = new Bundle();
+        args.putParcelable("brincadeira", brincadeira);
+        fragment.setArguments(args);
+        replaceFragment(fragment);
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 }

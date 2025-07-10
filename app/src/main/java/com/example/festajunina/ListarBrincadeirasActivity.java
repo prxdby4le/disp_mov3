@@ -43,7 +43,7 @@ public class ListarBrincadeirasActivity extends AppCompatActivity {
 
     private void carregarLista() {
         lista = dao.listar();
-        adapter = new BrincadeiraAdapter(this, lista);
+        adapter = new BrincadeiraAdapter(this, lista, brincadeira -> {});
         recyclerView.setAdapter(adapter);
     }
 }
