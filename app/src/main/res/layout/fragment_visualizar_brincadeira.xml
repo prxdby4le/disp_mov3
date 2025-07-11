@@ -48,6 +48,7 @@
             android:background="@drawable/bg_item_arredondado"
             android:text="Descrição detalhada da brincadeira"
             android:lineSpacingExtra="2dp"
+            android:padding="12dp"
             android:minHeight="60dp"
             android:maxLines="10"
             android:ellipsize="end" />
